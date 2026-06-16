@@ -45,8 +45,8 @@
     .leaflet-popup { display:none !important; }
     .leaflet-control-container { display:none !important; }
 
-    /* Punto de ubicación: celeste claro y no bloquea clicks */
-    .loc-point { pointer-events:none !important; }
+    /* Punto de ubicación: rosa pastel, no bloquea clicks y queda atrás */
+    .loc-point { pointer-events:none !important; z-index:100 !important; }
 
     /* Control de zoom DEBAJO del botón GPS - bloque compacto */
     #zoom-buttons {
@@ -253,6 +253,8 @@ PK_DATA.forEach(p => {
   // Visibilidad inicial según el zoom con el que arranca el mapa.
   if (!shouldShow(p.escala, currentZoom)) m.setStyle({ opacity:0, fillOpacity:0 });
   m.addTo(map);
+  // Asegurar que los PKs queden siempre arriba del punto de ubicación
+  m.bringToFront();
   allMarkers.push({ marker: m, scale: p.escala, data: p });
 });
 
@@ -339,8 +341,8 @@ document.getElementById('gps-btn').addEventListener('click', function() {
     const {latitude:lat, longitude:lng, accuracy} = pos.coords;
     if(locMarker) map.removeLayer(locMarker);
     if(locCircle) map.removeLayer(locCircle);
-    // Solo un pequeño punto celeste claro, sin círculo de precisión que bloquee clicks
-    locCircle = L.circleMarker([lat,lng],{radius:6,color:'#66CCFF',fillColor:'#66CCFF',fillOpacity:0.6,weight:1,className:'loc-point'}).addTo(map);
+    // Punto rosa pastel de ubicación, con z-index bajo para que los PKs siempre queden arriba
+    locCircle = L.circleMarker([lat,lng],{radius:6,color:'#D8A8A8',fillColor:'#E8C8C8',fillOpacity:0.8,weight:1.5,className:'loc-point'}).addTo(map);
     locMarker = L.circleMarker([lat,lng],{radius:9,color:'#fff',fillColor:BLUE,fillOpacity:1,weight:3}).addTo(map);
     map.flyTo([lat,lng], 17, { animate:true, duration:1.8, easeLinearity:0.25 });
     this.classList.remove('locating');
