@@ -45,24 +45,25 @@
     .leaflet-popup { display:none !important; }
     .leaflet-control-container { display:none !important; }
 
-    /* Control de zoom DEBAJO del botón GPS */
+    /* Control de zoom DEBAJO del botón GPS - bloque compacto */
     #zoom-buttons {
       position:fixed;
       right:14px;
-      bottom:110px;
+      bottom:120px;
       display:flex;
       flex-direction:column;
-      border-radius:12px;
+      border-radius:8px;
       overflow:hidden;
       box-shadow:0 2px 14px rgba(0,0,0,0.25);
       z-index:1000;
+      background:#fff;
     }
     #zoom-buttons button {
-      width:56px; height:56px;
+      width:48px; height:48px;
       background:#fff;
       color:#0066ff;
       border:none;
-      font-size:32px;
+      font-size:28px;
       font-weight:700;
       line-height:1;
       display:flex;
@@ -77,19 +78,19 @@
     #zoom-buttons button:hover { background:#f5f9ff; }
     #zoom-buttons button:active { background:#f0f4ff; }
 
-    /* Indicador de zoom numérico: debajo de los botones */
+    /* Indicador de zoom numérico: dentro del bloque de zoom */
     #zoom-indicator-side {
       position:fixed;
       right:14px;
-      bottom:50px;
-      background:#0066ff;
-      border-radius:6px;
-      padding:10px 6px;
-      width:56px;
+      bottom:72px;
+      background:#fff;
+      border-radius:8px;
+      padding:8px;
+      width:48px;
       text-align:center;
-      font-size:18px;
+      font-size:16px;
       font-weight:700;
-      color:#fff;
+      color:#0066ff;
       box-shadow:0 2px 14px rgba(0,0,0,0.25);
       pointer-events:none;
       z-index:1000;
