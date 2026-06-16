@@ -125,8 +125,12 @@
 
 <div id="map">
   <div id="status"></div>
-  <div id="zoom-indicator-side">—</div>
   <button id="gps-btn" title="Mi ubicación">📍</button>
+  <div id="zoom-buttons">
+    <button id="zoom-in" title="Zoom in">+</button>
+    <button id="zoom-out" title="Zoom out">−</button>
+  </div>
+  <div id="zoom-indicator-side">—</div>
 
   <div id="popup-panel">
     <div id="popup-handle"></div>
@@ -341,6 +345,15 @@ document.getElementById('gps-btn').addEventListener('click', function() {
     this.classList.remove('locating');
     showStatus('No se pudo obtener la ubicación', 3000);
   }, {enableHighAccuracy:true, timeout:10000});
+});
+
+// Botones de zoom
+document.getElementById('zoom-in').addEventListener('click', () => {
+  map.zoomIn();
+});
+
+document.getElementById('zoom-out').addEventListener('click', () => {
+  map.zoomOut();
 });
 </script>
 </body>
