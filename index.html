@@ -45,8 +45,8 @@
     .leaflet-popup { display:none !important; }
     .leaflet-control-container { display:none !important; }
 
-    /* Punto de ubicación: rosa pastel, no bloquea clicks y queda atrás */
-    .loc-point { pointer-events:none !important; z-index:100 !important; }
+    /* Lollipop rojo pastel de ubicación: no bloquea clicks */
+    .loc-lollipop { pointer-events:none !important; }
 
     /* Control de zoom DEBAJO del botón GPS - bloque compacto */
     #zoom-buttons {
@@ -341,9 +341,17 @@ document.getElementById('gps-btn').addEventListener('click', function() {
     const {latitude:lat, longitude:lng, accuracy} = pos.coords;
     if(locMarker) map.removeLayer(locMarker);
     if(locCircle) map.removeLayer(locCircle);
-    // Punto rosa pastel de ubicación, con z-index bajo para que los PKs siempre queden arriba
-    locCircle = L.circleMarker([lat,lng],{radius:6,color:'#D8A8A8',fillColor:'#E8C8C8',fillOpacity:0.8,weight:1.5,className:'loc-point'}).addTo(map);
-    locMarker = L.circleMarker([lat,lng],{radius:9,color:'#fff',fillColor:BLUE,fillOpacity:1,weight:3}).addTo(map);
+    // Lollipop completo rojo pastel - bola + palito
+    const locIcon = L.divIcon({
+      html: `<svg width="32" height="50" viewBox="0 0 32 50" xmlns="http://www.w3.org/2000/svg">
+        <line x1="16" y1="20" x2="16" y2="50" stroke="#D8A8A8" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="16" cy="12" r="10" fill="#E8C8C8" stroke="#D8A8A8" stroke-width="2"/>
+      </svg>`,
+      iconSize: [32, 50],
+      iconAnchor: [16, 50],
+      className: 'loc-lollipop'
+    });
+    locCircle = L.marker([lat,lng], {icon: locIcon}).addTo(map);
     map.flyTo([lat,lng], 17, { animate:true, duration:1.8, easeLinearity:0.25 });
     this.classList.remove('locating');
     statusEl.classList.remove('visible');
