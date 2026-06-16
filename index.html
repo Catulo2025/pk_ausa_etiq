@@ -16,15 +16,13 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#f0f2f5; color:#1a1a2e; height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
 
-    #header { background:#0d1526; padding:0 16px; height:48px; display:flex; align-items:center; justify-content:space-between; z-index:1000; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.4); }
+    #header { position:fixed; top:0; left:0; right:0; background:#0d1526; padding:0 16px; height:48px; display:flex; align-items:center; justify-content:space-between; z-index:2000; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.4); }
     #header-logo svg { height:22px; }
     #header-title { font-size:13px; font-weight:600; color:#f0a500; letter-spacing:0.08em; text-transform:uppercase; }
 
-    #map { flex:1; width:100%; position:relative; }
+    #map { flex:1; width:100%; position:relative; margin-top:48px; }
 
-    #zoom-indicator { position:absolute; top:10px; left:10px; z-index:999; background:rgba(255,255,255,0.85); border-radius:6px; padding:3px 8px; font-size:11px; color:#666; pointer-events:none; }
-
-    #gps-btn { position:absolute; bottom:180px; right:14px; z-index:1000; width:48px; height:48px; border-radius:50%; background:#fff; border:none; color:#0066ff; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 12px rgba(0,0,0,0.25); -webkit-tap-highlight-color:transparent; transition:transform 0.1s; }
+    #gps-btn { position:fixed; bottom:180px; right:14px; z-index:1000; width:48px; height:48px; border-radius:50%; background:#fff; border:none; color:#0066ff; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 12px rgba(0,0,0,0.25); -webkit-tap-highlight-color:transparent; transition:transform 0.1s; }
     #gps-btn:active { transform:scale(0.92); }
     #gps-btn.locating { animation:pulse 1s infinite; }
     @keyframes pulse { 0%,100%{box-shadow:0 2px 12px rgba(0,0,0,0.25)} 50%{box-shadow:0 2px 20px rgba(0,102,255,0.5)} }
@@ -45,8 +43,58 @@
     #status.visible { opacity:1; }
 
     .leaflet-popup { display:none !important; }
-    .leaflet-control-zoom { border:none !important; box-shadow:0 2px 8px rgba(0,0,0,0.15) !important; }
-    .leaflet-control-zoom a { background:#fff !important; color:#0066ff !important; border:none !important; border-radius:8px !important; width:36px !important; height:36px !important; line-height:36px !important; font-size:18px !important; margin-bottom:2px !important; }
+    .leaflet-control-container { display:none !important; }
+
+    /* Control de zoom DEBAJO del botón GPS */
+    #zoom-buttons {
+      position:fixed;
+      right:14px;
+      bottom:110px;
+      display:flex;
+      flex-direction:column;
+      border-radius:12px;
+      overflow:hidden;
+      box-shadow:0 2px 14px rgba(0,0,0,0.25);
+      z-index:1000;
+    }
+    #zoom-buttons button {
+      width:56px; height:56px;
+      background:#fff;
+      color:#0066ff;
+      border:none;
+      font-size:32px;
+      font-weight:700;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+      padding:0;
+      transition:background 0.1s;
+    }
+    #zoom-in { border-bottom:1px solid #e0e0e0; }
+    #zoom-buttons button:hover { background:#f5f9ff; }
+    #zoom-buttons button:active { background:#f0f4ff; }
+
+    /* Indicador de zoom numérico: debajo de los botones */
+    #zoom-indicator-side {
+      position:fixed;
+      right:14px;
+      bottom:50px;
+      background:#0066ff;
+      border-radius:6px;
+      padding:10px 6px;
+      width:56px;
+      text-align:center;
+      font-size:18px;
+      font-weight:700;
+      color:#fff;
+      box-shadow:0 2px 14px rgba(0,0,0,0.25);
+      pointer-events:none;
+      z-index:1000;
+    }
+
 
     /* Etiquetas de PK con halo amarillo, igual al SLD original */
     .pk-label {
@@ -76,7 +124,7 @@
 
 <div id="map">
   <div id="status"></div>
-  <div id="zoom-indicator">Zoom: —</div>
+  <div id="zoom-indicator-side">—</div>
   <button id="gps-btn" title="Mi ubicación">📍</button>
 
   <div id="popup-panel">
@@ -200,7 +248,7 @@ PK_DATA.forEach(p => {
   allMarkers.push({ marker: m, scale: p.escala, data: p });
 });
 
-const zoomEl = document.getElementById('zoom-indicator');
+const zoomEl = document.getElementById('zoom-indicator-side');
 let isUniform = currentZoom >= UNIFORM_ZOOM;
 
 function styleFor(scale, uniform) {
@@ -210,7 +258,7 @@ function styleFor(scale, uniform) {
 
 function updateLayers() {
   currentZoom = map.getZoom();
-  zoomEl.textContent = 'Zoom: ' + currentZoom;
+  zoomEl.textContent = currentZoom;
   const nowUniform = currentZoom >= UNIFORM_ZOOM;
   allMarkers.forEach(({ marker, scale }) => {
     const visible = shouldShow(scale, currentZoom);
@@ -233,6 +281,19 @@ function updateLayers() {
 map.on('zoomend', () => { updateLayers(); closePanel(); });
 map.on('moveend', updateLayers);
 map.whenReady(updateLayers);
+
+// Cuando el navegador muestra/oculta la barra de direcciones (al hacer
+// scroll, zoom o pan en mobile), el viewport cambia de tamaño pero
+// Leaflet no se entera solo: hay que forzarlo con invalidateSize(),
+// o el mapa queda desalineado respecto al header y los controles.
+function fixMapSize() {
+  map.invalidateSize();
+}
+window.addEventListener('resize', fixMapSize);
+window.addEventListener('orientationchange', fixMapSize);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', fixMapSize);
+}
 updateLayers();
 
 // Panel
